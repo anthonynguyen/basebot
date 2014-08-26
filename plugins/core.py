@@ -11,8 +11,19 @@ class CorePlugin:
         self.bot.registerCommand("reload", self.cmd_reload, True)
         self.bot.registerCommand("die", self.cmd_die, True)
 
+        self.bot.registerEvent("public_message", self.msgHandler)
+
     def shutdown(self):
         pass
+
+    """
+    #------------------------------------------#
+    #             Event Handlers               #
+    #------------------------------------------#
+    """
+
+    def msgHandler(self):
+        print("msgHandler fired!")
 
     """
     #------------------------------------------#
@@ -27,7 +38,7 @@ class CorePlugin:
                 for c in p.commands:
                     self.bot.reply("[{}] {}{} {}".format(p.name, self.bot.prefixes[0], c.name, c.function.__doc__))
         else:
-            for p in bot.plugins:
+            for p in self.bot.plugins:
                 for c in p.commands:
                     if data == c.name:
                         self.bot.reply("[{}] {}{} {}".format(p.name, self.bot.prefixes[0], c.name, c.function.__doc__))

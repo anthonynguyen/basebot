@@ -19,16 +19,18 @@ class Plugin:
         self.obj = pluginObject
 
         self.commands = []
+        self.eventHandlers = []
 
 class Command:
-    #def __init__(self, plug, name, function, password = False):
     def __init__(self, name, function, password = False):
-        # Just a plugin name, not a Plugin object
-        #self.plugin = plug
-
         self.name = name
         self.function = function
         self.password = password
+
+class EventHandler:
+    def __init__(self, event, function):
+        self.event = event
+        self.function = function
 
 def genRandomString(length):
     alpha = "abcdefghijklmnopqrstuvwxyz"
@@ -96,6 +98,30 @@ class Bot(irc.bot.SingleServerIRCBot):
             return
 
         plug.commands.append(Command(name, function, password))
+
+
+
+    _EVENTS = [
+        "private_message",
+        "public_message",
+        "nick_change",
+        "user_join",
+        "user_leave",
+    ]
+    def registerEvent(self, event, function):
+        if event not in self._EVENTS:
+            return
+
+        frame = inspect.stack()[1]
+        module = inspect.getmodule(frame[0]).__name__
+
+        # This should be guaranteed not to be None, but we'll handle None anyway
+        plug = next((p for p in self.plugins if p.module.__name__ == module), None)
+        if plug is None:
+               return
+
+        plug.eventHandlers.append(EventHandler(event, function))
+
 
 
     """
