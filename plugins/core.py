@@ -1,45 +1,60 @@
-"""
-#------------------------------------------#
-#               Commands                   #
-#------------------------------------------#
-"""
-
-def cmd_help(bot, issuedBy, data):
-    """[command] - displays this message"""
-    if data == "":
-        for p in bot.plugins:
-            for c in p.commands:
-                bot.reply("[{}] {}{} {}".format(p.name, bot.prefixes[0], c.name, c.function.__doc__))
-    else:
-        for p in bot.plugins:
-            for c in p.commands:
-                if data == c.name:
-                    bot.reply("[{}] {}{} {}".format(p.name, bot.prefixes[0], c.name, c.function.__doc__))
-                    return
-        bot.reply("Command not found: " + data)
+class CorePlugin:
+    def __init__(self, bot):
+        self.bot = bot
 
 
-"""
-#------------------------------------------#
-#             Admin Commands               #
-#------------------------------------------#
-"""
+    def startup(self):
+        self.bot.registerCommand("help", self.cmd_help)
 
-def pw_cmd_login(bot, issuedBy, data):
-    """logs you in"""
-    if issuedBy not in bot.loggedin:
-        bot.loggedin.append(issuedBy)
-        bot.reply("{} has logged in".format(issuedBy))
-    else:
-        bot.reply("You are already logged in")
+        self.bot.registerCommand("login", self.cmd_login, True)
+        self.bot.registerCommand("reload", self.cmd_reload, True)
+        self.bot.registerCommand("die", self.cmd_die, True)
 
-def pw_cmd_die(bot, issuedBy, data):
-    """kills the bot"""
-    if data:
-        bot.die("{}".format(data))
-    else:
-        bot.die("Leaving")
+    def shutdown(self):
+        pass
 
-def cmd_reload(bot, issuedBy, data):
-    """reloads plugins"""
-    bot.loadPlugins()
+    """
+    #------------------------------------------#
+    #               Commands                   #
+    #------------------------------------------#
+    """
+
+    def cmd_help(self, issuedBy, data):
+        """[command] - displays this message"""
+        if data == "":
+            for p in self.bot.plugins:
+                for c in p.commands:
+                    self.bot.reply("[{}] {}{} {}".format(p.name, self.bot.prefixes[0], c.name, c.function.__doc__))
+        else:
+            for p in bot.plugins:
+                for c in p.commands:
+                    if data == c.name:
+                        self.bot.reply("[{}] {}{} {}".format(p.name, self.bot.prefixes[0], c.name, c.function.__doc__))
+                        return
+            self.bot.reply("Command not found: " + data)
+
+
+    """
+    #------------------------------------------#
+    #             Admin Commands               #
+    #------------------------------------------#
+    """
+
+    def cmd_login(self, issuedBy, data):
+        """logs you in"""
+        if issuedBy not in bot.loggedin:
+            self.bot.loggedin.append(issuedBy)
+            self.bot.reply("{} has logged in".format(issuedBy))
+        else:
+            self.bot.reply("You are already logged in")
+
+    def cmd_die(self, issuedBy, data):
+        """kills the bot"""
+        if data:
+            self.bot.die("{}".format(data))
+        else:
+            self.bot.die("Leaving")
+
+    def cmd_reload(self, issuedBy, data):
+        """reloads plugins"""
+        self.bot.loadPlugins()

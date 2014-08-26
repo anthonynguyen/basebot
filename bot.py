@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import importlib
+import inspect
 import json
 import pkgutil
 import re
@@ -11,14 +12,20 @@ import irc.bot
 import plugins
 
 class Plugin:
-    def __init__(self, name, module, commands):
+    def __init__(self, name, module, pluginObject):
         self.name = name
         self.module = module
 
-        self.commands = commands
+        self.obj = pluginObject
+
+        self.commands = []
 
 class Command:
+    #def __init__(self, plug, name, function, password = False):
     def __init__(self, name, function, password = False):
+        # Just a plugin name, not a Plugin object
+        #self.plugin = plug
+
         self.name = name
         self.function = function
         self.password = password
@@ -29,7 +36,6 @@ def genRandomString(length):
 
 class Bot(irc.bot.SingleServerIRCBot):
     def __init__(self, config):
-        super(Bot, self).__init__([(config["server"], config["port"])], config["nick"], config["nick"])
         self.channel = config["channel"]
         self.target = self.channel
         self.prefixes = config["prefixes"]
@@ -39,6 +45,9 @@ class Bot(irc.bot.SingleServerIRCBot):
         self.plugins = []
         self.loadPlugins(True)
 
+        print("Starting bot")
+        super(Bot, self).__init__([(config["server"], config["port"])], config["nick"], config["nick"])
+
         # Adds a Latin-1 fallback when UTF-8 decoding doesn't work
         irc.client.ServerConnection.buffer_class = irc.buffer.LenientDecodingLineBuffer
 
@@ -47,32 +56,46 @@ class Bot(irc.bot.SingleServerIRCBot):
             importlib.reload(plugins)
 
         currentNames = [p.name for p in self.plugins]
-        newPlugins = []
+        oldPlugins = self.plugins
+        self.plugins = []
         for importer, mod, ispkg in pkgutil.iter_modules(plugins.__path__):
-            cmds = []
             if mod in currentNames:
-                m = next((p for p in self.plugins if p.name == mod), None).module
+                m = next((p for p in oldPlugins if p.name == mod), None)
+                m.obj.shutdown()
+
+                m = m.module
                 importlib.reload(m)
-                if not first:
-                    self.reply("[{}] reloaded".format(mod))
             else:
                 m = importlib.import_module("plugins." + mod)
-                if not first:
-                    self.reply("[{}] loaded".format(mod))
+
 
             for attr in dir(m):
-                if "cmd_" in attr:
-                    offset = 4
-                    pw = False
-                    if "pw_" in attr:
-                        offset += 3
-                        pw = True
+                if attr[-6:] == "Plugin":
+                    plugClass = getattr(m, attr)
+                    p = plugClass(self)
 
-                    cmds.append(Command(attr[offset:], getattr(m, attr), pw))
+                    ourPlugin = Plugin(mod, m, p)
+                    self.plugins.append(ourPlugin)
 
-            newPlugins.append(Plugin(mod, m, cmds))
+                    if first:
+                        print("[{}] loaded".format(mod))
+                    else:
+                        self.reply("[{}] loaded".format(mod))
 
-        self.plugins = newPlugins
+                    p.startup()
+                    
+                    break
+
+    def registerCommand(self, name, function, password = False):
+        frame = inspect.stack()[1]
+        module = inspect.getmodule(frame[0]).__name__
+        
+        # This should be guaranteed not to be None, but we'll handle None anyway
+        plug = next((p for p in self.plugins if p.module.__name__ == module), None)
+        if plug is None:
+            return
+
+        plug.commands.append(Command(name, function, password))
 
 
     """
@@ -151,7 +174,7 @@ class Bot(irc.bot.SingleServerIRCBot):
                 if command == c.name:
                     if c.password and (data[:5] == self.password or issuedBy in self.loggedin) or\
                         not c.password:
-                        c.function(self, issuedBy, data)
+                        c.function(issuedBy, data)
                         return
                     else:
                         self.reply("WRONG PASSWORD, NOB!")
