@@ -11,7 +11,9 @@ class CorePlugin:
         self.bot.registerCommand("reload", self.cmd_reload, True)
         self.bot.registerCommand("die", self.cmd_die, True)
 
-        self.bot.registerEvent("public_message", self.msgHandler)
+        self.bot.registerEvent("user_join", self.msgHandler)
+        self.bot.registerEvent("user_part", self.msgHandler)
+        self.bot.registerEvent("user_quit", self.msgHandler)
 
     def shutdown(self):
         pass

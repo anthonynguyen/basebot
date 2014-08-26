@@ -105,8 +105,9 @@ class Bot(irc.bot.SingleServerIRCBot):
         "private_message",
         "public_message",
         "nick_change",
-        "user_join",
-        "user_leave",
+        #"user_join"
+        "user_part",
+        "user_quit",
     ]
     def registerEvent(self, event, function):
         if event not in self._EVENTS:
@@ -174,12 +175,34 @@ class Bot(irc.bot.SingleServerIRCBot):
             self.executeCommand(ev, priv)
 
     def _on_nick(self, conn, ev):
+        for p in self.plugins:
+            for h in p.eventHandlers:
+                if h.event == "nick_change":
+                    h.function(ev)
         old = ev.source.nick
         new = ev.target
 
         if old in self.loggedin:
             self.loggedin.remove(old)
             self.loggedin.append(new)
+
+    # def _on_join(self, conn, ev):
+    #     for p in self.plugins:
+    #         for h in p.eventHandlers:
+    #             if h.event == "user_join":
+    #                 h.function(ev)
+
+    def _on_part(self, conn, ev):
+        for p in self.plugins:
+            for h in p.eventHandlers:
+                if h.event == "user_part":
+                    h.function(ev)
+
+    def _on_quit(self, conn, ev):
+        for p in self.plugins:
+            for h in p.eventHandlers:
+                if h.event == "user_quit":
+                    h.function(ev)
 
     def new_password(self):
         self.password = genRandomString(5)
