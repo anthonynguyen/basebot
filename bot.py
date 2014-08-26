@@ -1,12 +1,21 @@
 #!/usr/bin/env python
 
-import imp
+import importlib
 import json
+import pkgutil
 import re
 import random
 
 import irc.bot
-import commands
+
+import plugins
+
+class Plugin:
+    def __init__(self, name, module, commands):
+        self.name = name
+        self.module = module
+
+        self.commands = commands
 
 class Command:
     def __init__(self, name, function, password = False):
@@ -27,23 +36,39 @@ class Bot(irc.bot.SingleServerIRCBot):
         self.owners = config["owners"]
         self.loggedin = self.owners
 
-        self.loadCommands()
+        self.plugins = []
+        self.loadPlugins(True)
 
         # Adds a Latin-1 fallback when UTF-8 decoding doesn't work
         irc.client.ServerConnection.buffer_class = irc.buffer.LenientDecodingLineBuffer
 
-    def loadCommands(self):
-        imp.reload(commands)
-        self.commands = []
-        for attr in dir(commands):
-            if "cmd_" in attr:
-                offset = 4
-                pw = False
-                if "pw_" in attr:
-                    offset += 3
-                    pw = True
+    def loadPlugins(self, first = False):
+        if not first:
+            importlib.reload(plugins)
 
-                self.commands.append(Command(attr[offset:], getattr(commands, attr), pw))
+        currentNames = [p.name for p in self.plugins]
+        newPlugins = []
+        for importer, mod, ispkg in pkgutil.iter_modules(plugins.__path__):
+            cmds = []
+            if mod in currentNames:
+                m = next((p for p in self.plugins if p.name == mod), None).module
+                importlib.reload(m)
+            else:
+                m = importlib.import_module("plugins." + mod)
+
+            for attr in dir(m):
+                if "cmd_" in attr:
+                    offset = 4
+                    pw = False
+                    if "pw_" in attr:
+                        offset += 3
+                        pw = True
+
+                    cmds.append(Command(attr[offset:], getattr(m, attr), pw))
+
+            newPlugins.append(Plugin(mod, m, cmds))
+
+        self.plugins = newPlugins
 
 
     """
@@ -117,15 +142,16 @@ class Bot(irc.bot.SingleServerIRCBot):
         else:
             self.target = self.channel
 
-        for c in self.commands:
-            if command == c.name:
-                if c.password and (data[:5] == self.password or issuedBy in self.loggedin) or\
-                    not c.password:
-                    c.function(self, issuedBy, data)
-                    return
-                else:
-                    self.reply("WRONG PASSWORD, NOB!")
-                    return
+        for p in self.plugins:
+            for c in p.commands:
+                if command == c.name:
+                    if c.password and (data[:5] == self.password or issuedBy in self.loggedin) or\
+                        not c.password:
+                        c.function(self, issuedBy, data)
+                        return
+                    else:
+                        self.reply("WRONG PASSWORD, NOB!")
+                        return
 
         self.reply("Command not found: " + command)
 

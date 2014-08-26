@@ -7,13 +7,15 @@
 def cmd_help(bot, issuedBy, data):
     """[command] - displays this message"""
     if data == "":
-        for c in bot.commands:
-            bot.reply("{}{} {}".format(bot.prefixes[0], c.name, c.function.__doc__))
-    else:
-        for c in bot.commands:
-            if data == c.name:
+        for p in bot.plugins:
+            for c in p.commands:
                 bot.reply("{}{} {}".format(bot.prefixes[0], c.name, c.function.__doc__))
-                return
+    else:
+        for p in bot.plugins:
+            for c in p.commands:
+                if data == c.name:
+                    bot.reply("{}{} {}".format(bot.prefixes[0], c.name, c.function.__doc__))
+                    return
         bot.reply("Command not found: " + data)
 
 
@@ -42,6 +44,6 @@ def pw_cmd_die(bot, issuedBy, data):
         bot.reply("You don't have access to that command")
 
 def cmd_reload(bot, issuedBy, data):
-    """reloads commands"""
-    bot.loadCommands()
-    bot.reply("Commands reloaded")
+    """reloads plugins"""
+    bot.loadPlugins()
+    bot.reply("plugins reloaded")
