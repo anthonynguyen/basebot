@@ -26,6 +26,7 @@ class TwitterPlugin:
                                self.OAUTH_TOKEN, self.OAUTH_SECRET)
 
         self.bot.registerCommand("tweets", self.cmd_tweets)
+        self.bot.registerCommand("update", self.cmd_post)
 
         self.HTMLParser = html.parser.HTMLParser()
 
@@ -35,6 +36,15 @@ class TwitterPlugin:
 
     def reply(self, text):
         self.bot.reply(self.HTMLParser.unescape(text))
+
+
+    def cmd_post(self, issuedBy, data):
+        """Posts a tweet"""
+        if not data:
+            self.reply("Tweet cannot be empty!")
+            return
+
+        self.twitter.update_status(status = data)
 
 
     def cmd_tweets(self, issuedBy, data):
