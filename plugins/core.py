@@ -22,8 +22,8 @@ class CorePlugin:
     #------------------------------------------#
     """
 
-    def msgHandler(self):
-        print("msgHandler fired!")
+    def msgHandler(self, event):
+        self.bot.say("msgHandler fired!")
 
     """
     #------------------------------------------#

@@ -154,9 +154,17 @@ class Bot(irc.bot.SingleServerIRCBot):
             self.pm(owner, message)
 
     def on_privmsg(self, conn, ev):
+        for p in self.plugins:
+            for h in p.eventHandlers:
+                if h.event == "private_message":
+                    h.function(ev)
         self.parseChat(ev, True)
 
     def on_pubmsg(self, conn, ev):
+        for p in self.plugins:
+            for h in p.eventHandlers:
+                if h.event == "public_message":
+                    h.function(ev)
         self.parseChat(ev)
         if self.password in ev.arguments[0]:
             self.new_password()
