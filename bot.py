@@ -8,6 +8,7 @@ import re
 import random
 
 import irc.bot
+import sqlite3
 
 import plugins
 
@@ -20,6 +21,8 @@ class Plugin:
 
         self.commands = []
         self.eventHandlers = []
+
+        self.databaseConnection = sqlite3.connect("database/{}.sqlite".format(name))
 
 class Command:
     def __init__(self, name, function, password = False):
@@ -122,6 +125,17 @@ class Bot(irc.bot.SingleServerIRCBot):
                return
 
         plug.eventHandlers.append(EventHandler(event, function))
+
+    def getCursor(self):
+        frame = inspect.stack()[1]
+        module = inspect.getmodule(frame[0]).__name__
+
+        # This should be guaranteed not to be None, but we'll handle None anyway
+        plug = next((p for p in self.plugins if p.module.__name__ == module), None)
+        if plug is None:
+            return
+
+        return plug.databaseConnection.cursor()
 
 
 
