@@ -1,5 +1,8 @@
-config.json
 env
 venv
+
 __pycache__
 database/*
+
+config.json
+config/twitter.json

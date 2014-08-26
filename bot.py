@@ -77,17 +77,27 @@ class Bot(irc.bot.SingleServerIRCBot):
             for attr in dir(m):
                 if attr[-6:] == "Plugin":
                     plugClass = getattr(m, attr)
+
                     p = plugClass(self)
 
                     ourPlugin = Plugin(mod, m, p)
                     self.plugins.append(ourPlugin)
+
+                    # Try to load the plugin's config file
+                    try:
+                        pluginConf = open("config/{}.json")
+                        conf = json.loads(pluginConf.read())
+                        pluginConf.close()
+                    except:
+                        conf = None
+
+                    p.startup(conf)
 
                     if first:
                         print("[{}] loaded".format(mod))
                     else:
                         self.reply("[{}] loaded".format(mod))
 
-                    p.startup()
                     
                     break
 

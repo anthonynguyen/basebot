@@ -3,7 +3,7 @@ class CorePlugin:
         self.bot = bot
 
 
-    def startup(self):
+    def startup(self, config):
         self.bot.registerCommand("help", self.cmd_help)
         self.bot.registerCommand("h", self.cmd_help)
         self.bot.registerCommand("plugins", self.cmd_plugins)
