@@ -98,7 +98,7 @@ class CorePlugin:
 
     def cmd_login(self, issuedBy, data):
         """logs you in"""
-        if issuedBy not in bot.loggedin:
+        if issuedBy not in self.bot.loggedin:
             self.bot.loggedin.append(issuedBy)
             self.bot.reply("{} has logged in".format(issuedBy))
         else:

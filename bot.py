@@ -85,7 +85,7 @@ class Bot(irc.bot.SingleServerIRCBot):
 
                     # Try to load the plugin's config file
                     try:
-                        pluginConf = open("config/{}.json")
+                        pluginConf = open("config/{}.json".format(mod))
                         conf = json.loads(pluginConf.read())
                         pluginConf.close()
                     except:
