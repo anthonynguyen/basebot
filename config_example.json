@@ -1,0 +1,8 @@
+{
+"server": "irc.network.com",
+"port": 6667,
+"prefixes": ".",
+"channel": "#channel",
+"nick": "bot",
+"owners": ["owner"],
+}
