@@ -46,4 +46,3 @@ def pw_cmd_die(bot, issuedBy, data):
 def cmd_reload(bot, issuedBy, data):
     """reloads plugins"""
     bot.loadPlugins()
-    bot.reply("plugins reloaded")

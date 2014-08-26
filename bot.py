@@ -53,8 +53,12 @@ class Bot(irc.bot.SingleServerIRCBot):
             if mod in currentNames:
                 m = next((p for p in self.plugins if p.name == mod), None).module
                 importlib.reload(m)
+                if not first:
+                    self.reply("[{}] reloaded".format(mod))
             else:
                 m = importlib.import_module("plugins." + mod)
+                if not first:
+                    self.reply("[{}] loaded".format(mod))
 
             for attr in dir(m):
                 if "cmd_" in attr:
