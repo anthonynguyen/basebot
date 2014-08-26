@@ -22,6 +22,8 @@ class TwitterPlugin:
         self.username = config["username"]
         self.userid = config["userid"]
 
+        self.allowed_posters = config["allowed_posters"]
+
         self.twitter = Twython(self.API_KEY, self.API_SECRET,
                                self.OAUTH_TOKEN, self.OAUTH_SECRET)
 
@@ -40,6 +42,10 @@ class TwitterPlugin:
 
     def cmd_post(self, issuedBy, data):
         """Posts a tweet"""
+        if issuedBy not in self.allowed_posters:
+            self.reply("You are not allowed to post a tweet.")
+            return
+
         if not data:
             self.reply("Tweet cannot be empty!")
             return
