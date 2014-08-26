@@ -255,7 +255,11 @@ class Bot(irc.bot.SingleServerIRCBot):
                 if command == c.name:
                     if c.password and (data[:5] == self.password or issuedBy in self.loggedin) or\
                         not c.password:
-                        c.function(issuedBy, data)
+                        try:
+                            c.function(issuedBy, data)
+                        except Exception as e:
+                            self.reply("The command failed:")
+                            self.reply(e.__str__())
                         return
                     else:
                         self.reply("WRONG PASSWORD, NOB!")
