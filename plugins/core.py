@@ -9,12 +9,12 @@ def cmd_help(bot, issuedBy, data):
     if data == "":
         for p in bot.plugins:
             for c in p.commands:
-                bot.reply("{}{} {}".format(bot.prefixes[0], c.name, c.function.__doc__))
+                bot.reply("[{}] {}{} {}".format(p.name, bot.prefixes[0], c.name, c.function.__doc__))
     else:
         for p in bot.plugins:
             for c in p.commands:
                 if data == c.name:
-                    bot.reply("{}{} {}".format(bot.prefixes[0], c.name, c.function.__doc__))
+                    bot.reply("[{}] {}{} {}".format(p.name, bot.prefixes[0], c.name, c.function.__doc__))
                     return
         bot.reply("Command not found: " + data)
 
