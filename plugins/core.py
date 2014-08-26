@@ -6,6 +6,7 @@ class CorePlugin:
     def startup(self):
         self.bot.registerCommand("help", self.cmd_help)
         self.bot.registerCommand("h", self.cmd_help)
+        self.bot.registerCommand("plugins", self.cmd_plugins)
 
         self.bot.registerCommand("login", self.cmd_login, True)
         self.bot.registerCommand("reload", self.cmd_reload, True)
@@ -39,6 +40,11 @@ class CorePlugin:
                         self.bot.reply("[{}] {}{} {}".format(p.name, self.bot.prefixes[0], c.name, c.function.__doc__))
                         return
             self.bot.reply("Command not found: " + data)
+
+    def cmd_plugins(self, issuedBy, data):
+        """lists all the currently loaded plugins"""
+        self.bot.reply("Plugins: " + ", ".join(p.name for p in self.bot.plugins))
+
 
 
     """
