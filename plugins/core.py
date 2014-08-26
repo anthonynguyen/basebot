@@ -35,13 +35,10 @@ def pw_cmd_login(bot, issuedBy, data):
 
 def pw_cmd_die(bot, issuedBy, data):
     """kills the bot"""
-    if issuedBy in bot.loggedin:
-        if data:
-            bot.die("{}".format(data))
-        else:
-            bot.die("Leaving")
+    if data:
+        bot.die("{}".format(data))
     else:
-        bot.reply("You don't have access to that command")
+        bot.die("Leaving")
 
 def cmd_reload(bot, issuedBy, data):
     """reloads plugins"""
