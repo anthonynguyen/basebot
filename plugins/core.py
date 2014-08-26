@@ -5,6 +5,7 @@ class CorePlugin:
 
     def startup(self):
         self.bot.registerCommand("help", self.cmd_help)
+        self.bot.registerCommand("h", self.cmd_help)
 
         self.bot.registerCommand("login", self.cmd_login, True)
         self.bot.registerCommand("reload", self.cmd_reload, True)
