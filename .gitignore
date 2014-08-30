@@ -6,6 +6,10 @@ venv
 __pycache__
 *.pyc
 
+*.egg-info
+build/
+dist/
+
 database/*
 config.json
 config/twitter.json
