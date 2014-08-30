@@ -6,14 +6,15 @@ import json
 import pkgutil
 import re
 import random
+import sqlite3
+import sys
 
 import irc.bot
-import sqlite3
 
 import configloader
-import plugins
+import core
 
-class Plugin:
+class PluginContainer:
     def __init__(self, name, module, pluginObject):
         self.name = name
         self.module = module
@@ -23,7 +24,7 @@ class Plugin:
         self.commands = []
         self.eventHandlers = []
 
-        self.databaseConnection = sqlite3.connect("database/{}.sqlite".format(name))
+        #self.databaseConnection = sqlite3.connect("database/{}.sqlite".format(name))
 
 class Command:
     def __init__(self, name, function, password = False):
@@ -48,6 +49,9 @@ class Bot(irc.bot.SingleServerIRCBot):
         self.owners = config["owners"]
         self.loggedin = self.owners
 
+        self.basepath = config["path"]
+        sys.path.insert(0, self.basepath + "/plugins")
+
         self.plugins = []
         self.loadPlugins(True)
 
@@ -58,13 +62,24 @@ class Bot(irc.bot.SingleServerIRCBot):
         irc.client.ServerConnection.buffer_class = irc.buffer.LenientDecodingLineBuffer
 
     def loadPlugins(self, first = False):
-        if not first:
-            importlib.reload(plugins)
-
         currentNames = [p.name for p in self.plugins]
         oldPlugins = self.plugins
         self.plugins = []
-        for importer, mod, ispkg in pkgutil.iter_modules(plugins.__path__):
+        
+        importlib.reload(core)
+        p = core.CorePlugin(self)
+
+        self.plugins.append(PluginContainer("core", core, p))
+
+        p.startup(None)
+
+        if first:
+            print("[core] loaded")
+        else:
+            self.reply("[core] loaded")
+
+        for importer, mod, ispkg in pkgutil.iter_modules(path = [self.basepath +
+                                                         "/plugins"]):
             if mod in currentNames:
                 m = next((p for p in oldPlugins if p.name == mod), None)
                 m.obj.shutdown()
@@ -72,7 +87,7 @@ class Bot(irc.bot.SingleServerIRCBot):
                 m = m.module
                 importlib.reload(m)
             else:
-                m = importlib.import_module("plugins." + mod)
+                m = importlib.import_module(mod)
 
 
             for attr in dir(m):
@@ -81,12 +96,13 @@ class Bot(irc.bot.SingleServerIRCBot):
 
                     p = plugClass(self)
 
-                    ourPlugin = Plugin(mod, m, p)
+                    ourPlugin = PluginContainer(mod, m, p)
                     self.plugins.append(ourPlugin)
 
                     # Try to load the plugin's config file
                     try:
-                        pluginConf = open("config/{}.json".format(mod))
+                        pluginConf = open(
+                            self.basepath + "/config/{}.json".format(mod))
                         conf = json.loads(pluginConf.read())
                         pluginConf.close()
                     except:

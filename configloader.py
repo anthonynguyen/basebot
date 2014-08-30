@@ -46,6 +46,7 @@ def try_basepath(path):
 
     try:
         config = json.loads(configFile.read())
+        config["path"] = fullPath
         print("Config loaded from " + fullPath)
         return config
     except:
