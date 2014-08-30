@@ -1,9 +1,11 @@
 env
 venv
 
+*.swp
+
 __pycache__
 *.pyc
-database/*
 
+database/*
 config.json
 config/twitter.json
