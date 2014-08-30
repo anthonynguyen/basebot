@@ -16,6 +16,14 @@ setuptools.setup(
 
     packages = ["basebot"],
 
+    install_requires = [
+        "irc == 8.9.1",
+        "jaraco.timing == 1.0",
+        "jaraco.util == 10.2",
+        "more-itertools == 2.2",
+        "six == 1.7.3"
+    ],
+
     entry_points = {
         "console_scripts": ["basebot=basebot.bot:main"]
     }
