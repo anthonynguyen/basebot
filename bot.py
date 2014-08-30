@@ -10,6 +10,7 @@ import random
 import irc.bot
 import sqlite3
 
+import configloader
 import plugins
 
 class Plugin:
@@ -268,12 +269,9 @@ class Bot(irc.bot.SingleServerIRCBot):
         self.reply("Command not found: " + command)
 
 def main():
-    try:
-        configFile = open("config.json", "r")
-        config = json.loads(configFile.read())
-    except:
-        print("Invalid or missing config file. Check if config.json exists and follows the correct format")
-        return
+    config = configloader.load_config()
+    if config is None:
+        quit()
 
     bot = Bot(config)
     bot.start()
