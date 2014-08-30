@@ -15,6 +15,7 @@ Installation
     $ pip install -r requirements.txt
     $ mkdir ~/.basebot
     $ cp -r sample/* ~/.basebot/
-    $ python bot.py
+    $ python setup.py install
+    $ basebot
 
 
