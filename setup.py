@@ -4,7 +4,7 @@ import setuptools
 
 setuptools.setup(
     name ="basebot",
-    version = "1.0.3",
+    version = "1.0.4",
     license = "MIT",
 
     description = "a base IRC bot extensible with plugins",
