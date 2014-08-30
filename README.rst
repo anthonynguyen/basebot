@@ -8,7 +8,8 @@ basebot is a foundation on which you can build your IRC bots. Look at `core.py` 
 
 Installation
 ------------
-..code:: shell
+
+.. code:: shell
 
     $ git clone https://github.com/clearskies/basebot.git
     $ pip install -r requirements.txt
