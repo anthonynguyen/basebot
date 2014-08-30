@@ -11,8 +11,8 @@ import sys
 
 import irc.bot
 
-import configloader
-import core
+from . import configloader
+from . import core
 
 class PluginContainer:
     def __init__(self, name, module, pluginObject):
