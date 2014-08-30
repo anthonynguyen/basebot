@@ -16,6 +16,15 @@ setuptools.setup(
 
     packages = ["basebot"],
 
+    classifiers = [
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: MIT License",
+        "Natural Language :: English",
+        "Operating System :: Unix",
+        "Programming Language :: Python :: 3",
+        "Topic :: Communications :: Chat :: Internet Relay Chat"
+    ],
+
     install_requires = [
         "irc == 8.9.1",
         "jaraco.timing == 1.0",
