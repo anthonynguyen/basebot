@@ -19,3 +19,7 @@ Installation
     $ basebot
 
 
+Plugins
+-------
+
+Look in https://github.com/clearskies/basebot/tree/master/sample/ for sample plugins
