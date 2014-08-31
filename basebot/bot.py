@@ -52,12 +52,11 @@ class Bot(irc.bot.SingleServerIRCBot):
         self.basepath = config["path"]
         sys.path.insert(0, self.basepath + "/plugins")
 
-        self.plugins = []
-        self.loadPlugins(True)
-
         print("Starting bot")
         super(Bot, self).__init__([(config["server"], config["port"])], config["nick"], config["nick"])
 
+        self.plugins = []
+        self.loadPlugins(True)
         # Adds a Latin-1 fallback when UTF-8 decoding doesn't work
         irc.client.ServerConnection.buffer_class = irc.buffer.LenientDecodingLineBuffer
 
