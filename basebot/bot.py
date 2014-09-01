@@ -15,7 +15,7 @@ from . import configloader
 from . import core
 
 class PluginContainer:
-    def __init__(self, name, module, pluginObject):
+    def __init__(self, name, module, pluginObject, basepath):
         self.name = name
         self.module = module
 
@@ -24,7 +24,8 @@ class PluginContainer:
         self.commands = []
         self.eventHandlers = []
 
-        #self.databaseConnection = sqlite3.connect("database/{}.sqlite".format(name))
+        self.databaseConnection = sqlite3.connect(basepath + "/database/{}.sqlite".format(name))
+
 
 class Command:
     def __init__(self, name, function, password = False):
@@ -57,6 +58,7 @@ class Bot(irc.bot.SingleServerIRCBot):
 
         self.plugins = []
         self.loadPlugins(True)
+
         # Adds a Latin-1 fallback when UTF-8 decoding doesn't work
         irc.client.ServerConnection.buffer_class = irc.buffer.LenientDecodingLineBuffer
 
@@ -68,7 +70,7 @@ class Bot(irc.bot.SingleServerIRCBot):
         importlib.reload(core)
         p = core.CorePlugin(self)
 
-        self.plugins.append(PluginContainer("core", core, p))
+        self.plugins.append(PluginContainer("core", core, p, self.basepath))
 
         p.startup(None)
 
@@ -95,9 +97,9 @@ class Bot(irc.bot.SingleServerIRCBot):
 
                     p = plugClass(self)
 
-                    ourPlugin = PluginContainer(mod, m, p)
+                    ourPlugin = PluginContainer(mod, m, p, self.basepath)
                     self.plugins.append(ourPlugin)
-
+                    
                     # Try to load the plugin's config file
                     try:
                         pluginConf = open(
