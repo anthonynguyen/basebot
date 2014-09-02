@@ -3,6 +3,7 @@
 import importlib
 import inspect
 import json
+import os
 import pkgutil
 import re
 import random
@@ -24,6 +25,8 @@ class PluginContainer:
         self.commands = []
         self.eventHandlers = []
 
+        if not os.path.exists(basepath + "/database"):
+            os.makedirs(basepath + "/database")
         self.databaseConnection = sqlite3.connect(basepath + "/database/{}.sqlite".format(name))
 
 
@@ -154,16 +157,16 @@ class Bot(irc.bot.SingleServerIRCBot):
 
         plug.eventHandlers.append(EventHandler(event, function))
 
-    def getCursor(self):
+    def getDatabase(self):
         frame = inspect.stack()[1]
         module = inspect.getmodule(frame[0]).__name__
 
         # This should be guaranteed not to be None, but we'll handle None anyway
         plug = next((p for p in self.plugins if p.module.__name__ == module), None)
         if plug is None:
-            return
+            return None
 
-        return plug.databaseConnection.cursor()
+        return plug.databaseConnection
 
 
 
