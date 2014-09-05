@@ -9,11 +9,27 @@ import re
 import random
 import sqlite3
 import sys
+import time
 
 import irc.bot
 
 from . import configloader
 from . import core
+
+def RateLimited(maxPerSecond):
+    minInterval = 1.0 / float(maxPerSecond)
+    def decorate(func):
+        lastTimeCalled = [0.0]
+        def rateLimitedFunction(*args,**kargs):
+            elapsed = time.clock() - lastTimeCalled[0]
+            leftToWait = minInterval - elapsed
+            if leftToWait>0:
+                time.sleep(leftToWait)
+            ret = func(*args,**kargs)
+            lastTimeCalled[0] = time.clock()
+            return ret
+        return rateLimitedFunction
+    return decorate
 
 class PluginContainer:
     def __init__(self, name, module, pluginObject, basepath):
@@ -182,12 +198,14 @@ class Bot(irc.bot.SingleServerIRCBot):
     def on_ping(self, conn, ev):
         self.connection.pong(ev.target)
 
+    @RateLimited(2)
     def say(self, msg):
         self.connection.privmsg(self.channel, msg)
 
     def pm(self, nick, msg):
         self.connection.privmsg(nick, msg)
     
+    @RateLimited(2)
     def reply(self, msg):
         self.connection.privmsg(self.target, msg)
 
