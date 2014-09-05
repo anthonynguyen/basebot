@@ -72,6 +72,11 @@ class Bot(irc.bot.SingleServerIRCBot):
         self.basepath = config["path"]
         sys.path.insert(0, self.basepath + "/plugins")
 
+        try:
+            self.autoRun = config["on_connect"]
+        except:
+            self.autoRun = None
+
         print("Starting bot")
         super(Bot, self).__init__([(config["server"], config["port"])], config["nick"], config["nick"])
 
@@ -210,6 +215,11 @@ class Bot(irc.bot.SingleServerIRCBot):
         self.connection.privmsg(self.target, msg)
 
     def on_welcome(self, conn, e):
+        if self.autoRun is not None:
+            conn.send_raw(self.autoRun)
+            print("Autorun command sent: " + self.autoRun)
+            time.sleep(5)
+
         conn.join(self.channel)
         self.new_password()
 
