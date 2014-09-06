@@ -5,5 +5,7 @@
 "channel": "#channel",
 "nick": "bot",
 "owners": ["owner"],
-"on_connect": "PRIVMSG Q@CServe.quakenet.org :AUTH foo bar"
+"on_connect": [
+    "PRIVMSG Q@CServe.quakenet.org :AUTH foo bar"
+]
 }

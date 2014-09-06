@@ -216,8 +216,9 @@ class Bot(irc.bot.SingleServerIRCBot):
 
     def on_welcome(self, conn, e):
         if self.autoRun is not None:
-            conn.send_raw(self.autoRun)
-            print("Autorun command sent: " + self.autoRun)
+            for cmd in self.autoRun:
+                conn.send_raw(cmd)
+                print("Autorun command sent: " + cmd)
             time.sleep(5)
 
         conn.join(self.channel)
