@@ -13,6 +13,7 @@ _CONFIG = {
 
 _DEFAULT_PATH = "~/.basebot/"
 
+
 def try_create(path):
     print("Trying to create a config.json in " + path)
 
@@ -22,9 +23,10 @@ def try_create(path):
         print("Unable to write to config.json in " + path)
         return False
 
-    configFile.write(json.dumps(_CONFIG, indent = 4))
+    configFile.write(json.dumps(_CONFIG, indent=4))
     print("Wrote default config to config.json in " + path)
     return True
+
 
 def try_basepath(path):
     fullPath = os.path.abspath(os.path.expanduser(path))
@@ -53,11 +55,12 @@ def try_basepath(path):
         print("Invalid JSON in config file")
         return None
 
+
 def load_config():
     if len(sys.argv) < 2:
         print("No runtime directory specified")
         tryPath = _DEFAULT_PATH
     else:
         tryPath = sys.argv[1]
-    
+
     return try_basepath(tryPath)

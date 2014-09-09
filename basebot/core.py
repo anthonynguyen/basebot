@@ -2,7 +2,6 @@ class CorePlugin:
     def __init__(self, bot):
         self.bot = bot
 
-
     def startup(self, config):
         self.bot.registerCommand("help", self.cmd_help)
         self.bot.registerCommand("h", self.cmd_help)
@@ -74,20 +73,25 @@ class CorePlugin:
         """[command] - displays this message"""
         if data == "":
             for p in self.bot.plugins:
-                self.bot.reply("[{}] {}".format(p.name, ", ".join(self.bot.prefixes[0] + c.name + ("*" if c.password else "") for c in p.commands)))
+                cmds = [self.bot.prefixes[0] + c.name + * if c.password else ""
+                        for c in p.commands]
+                self.bot.reply("[{}] {}".format(p.name, ", ".join(cmds)))
         else:
             for p in self.bot.plugins:
                 for c in p.commands:
                     if data == c.name:
-                        self.bot.reply("[{}] {}{} {}".format(p.name, self.bot.prefixes[0], c.name, c.function.__doc__))
+                        self.bot.reply(
+                            "[{}] {}{} {}".format(
+                                p.name, self.bot.prefixes[0],
+                                c.name, c.function.__doc__)
+                        )
                         return
             self.bot.reply("Command not found: " + data)
 
     def cmd_plugins(self, issuedBy, data):
         """lists all the currently loaded plugins"""
-        self.bot.reply("Plugins: " + ", ".join(p.name for p in self.bot.plugins))
-
-
+        self.bot.reply("Plugins: " +
+                       ", ".join(p.name for p in self.bot.plugins))
 
     """
     #------------------------------------------#

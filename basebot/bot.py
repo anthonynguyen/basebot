@@ -16,20 +16,24 @@ import irc.bot
 from . import configloader
 from . import core
 
+
 def RateLimited(maxPerSecond):
     minInterval = 1.0 / float(maxPerSecond)
+
     def decorate(func):
         lastTimeCalled = [0.0]
-        def rateLimitedFunction(*args,**kargs):
+
+        def rateLimitedFunction(*args, **kargs):
             elapsed = time.clock() - lastTimeCalled[0]
             leftToWait = minInterval - elapsed
-            if leftToWait>0:
+            if leftToWait > 0:
                 time.sleep(leftToWait)
-            ret = func(*args,**kargs)
+            ret = func(*args, **kargs)
             lastTimeCalled[0] = time.clock()
             return ret
         return rateLimitedFunction
     return decorate
+
 
 class PluginContainer:
     def __init__(self, name, module, pluginObject, basepath):
@@ -43,23 +47,27 @@ class PluginContainer:
 
         if not os.path.exists(basepath + "/database"):
             os.makedirs(basepath + "/database")
-        self.databaseConnection = sqlite3.connect(basepath + "/database/{}.sqlite".format(name))
+        self.databaseConnection = sqlite3.connect(
+            basepath + "/database/{}.sqlite".format(name))
 
 
 class Command:
-    def __init__(self, name, function, password = False):
+    def __init__(self, name, function, password=False):
         self.name = name
         self.function = function
         self.password = password
+
 
 class EventHandler:
     def __init__(self, event, function):
         self.event = event
         self.function = function
 
+
 def genRandomString(length):
     alpha = "abcdefghijklmnopqrstuvwxyz"
     return "".join(random.choice(alpha) for _ in range(length))
+
 
 class Bot(irc.bot.SingleServerIRCBot):
     def __init__(self, config):
@@ -78,19 +86,22 @@ class Bot(irc.bot.SingleServerIRCBot):
             self.autoRun = None
 
         print("Starting bot")
-        super(Bot, self).__init__([(config["server"], config["port"])], config["nick"], config["nick"])
+        super(Bot, self).__init__(
+            [(config["server"], config["port"])],
+            config["nick"], config["nick"])
 
         self.plugins = []
         self.loadPlugins(True)
 
         # Adds a Latin-1 fallback when UTF-8 decoding doesn't work
-        irc.client.ServerConnection.buffer_class = irc.buffer.LenientDecodingLineBuffer
+        irc.client.ServerConnection.buffer_class = \
+            irc.buffer.LenientDecodingLineBuffer
 
-    def loadPlugins(self, first = False):
+    def loadPlugins(self, first=False):
         currentNames = [p.name for p in self.plugins]
         oldPlugins = self.plugins
         self.plugins = []
-        
+
         importlib.reload(core)
         p = core.CorePlugin(self)
 
@@ -103,7 +114,7 @@ class Bot(irc.bot.SingleServerIRCBot):
         else:
             self.reply("[core] loaded")
 
-        for importer, mod, ispkg in pkgutil.iter_modules(path = [self.basepath +
+        for importer, mod, ispkg in pkgutil.iter_modules(path=[self.basepath +
                                                          "/plugins"]):
             if mod in currentNames:
                 m = next((p for p in oldPlugins if p.name == mod), None)
@@ -114,7 +125,6 @@ class Bot(irc.bot.SingleServerIRCBot):
             else:
                 m = importlib.import_module(mod)
 
-
             for attr in dir(m):
                 if attr[-6:] == "Plugin":
                     plugClass = getattr(m, attr)
@@ -123,7 +133,7 @@ class Bot(irc.bot.SingleServerIRCBot):
 
                     ourPlugin = PluginContainer(mod, m, p, self.basepath)
                     self.plugins.append(ourPlugin)
-                    
+
                     # Try to load the plugin's config file
                     try:
                         pluginConf = open(
@@ -140,30 +150,28 @@ class Bot(irc.bot.SingleServerIRCBot):
                     else:
                         self.reply("[{}] loaded".format(mod))
 
-                    
                     break
 
-    def registerCommand(self, name, function, password = False):
+    def registerCommand(self, name, function, password=False):
         frame = inspect.stack()[1]
         module = inspect.getmodule(frame[0]).__name__
-        
-        # This should be guaranteed not to be None, but we'll handle None anyway
-        plug = next((p for p in self.plugins if p.module.__name__ == module), None)
+
+        plug = next((p for p in self.plugins if p.module.__name__ == module),
+                    None)
         if plug is None:
             return
 
         plug.commands.append(Command(name, function, password))
 
-
-
     _EVENTS = [
         "private_message",
         "public_message",
         "nick_change",
-        #"user_join"
+        # "user_join"
         "user_part",
         "user_quit",
     ]
+
     def registerEvent(self, event, function):
         if event not in self._EVENTS:
             return
@@ -171,10 +179,10 @@ class Bot(irc.bot.SingleServerIRCBot):
         frame = inspect.stack()[1]
         module = inspect.getmodule(frame[0]).__name__
 
-        # This should be guaranteed not to be None, but we'll handle None anyway
-        plug = next((p for p in self.plugins if p.module.__name__ == module), None)
+        plug = next((p for p in self.plugins if p.module.__name__ == module),
+                    None)
         if plug is None:
-               return
+            return
 
         plug.eventHandlers.append(EventHandler(event, function))
 
@@ -182,35 +190,33 @@ class Bot(irc.bot.SingleServerIRCBot):
         frame = inspect.stack()[1]
         module = inspect.getmodule(frame[0]).__name__
 
-        # This should be guaranteed not to be None, but we'll handle None anyway
-        plug = next((p for p in self.plugins if p.module.__name__ == module), None)
+        plug = next((p for p in self.plugins if p.module.__name__ == module),
+                    None)
         if plug is None:
             return None
 
         return plug.databaseConnection
-
-
 
     """
     #------------------------------------------#
     #            IRC-Related Stuff             #
     #------------------------------------------#
     """
-    
+
     def on_nicknameinuse(self, conn, ev):
         conn.nick(conn.get_nickname() + "_")
-    
+
     def on_ping(self, conn, ev):
         self.connection.pong(ev.target)
 
     @RateLimited(1.5)
     def say(self, msg):
         self.connection.privmsg(self.channel, msg)
-    
+
     @RateLimited(1.5)
     def pm(self, nick, msg):
         self.connection.privmsg(nick, msg)
-    
+
     @RateLimited(1.5)
     def reply(self, msg):
         self.connection.privmsg(self.target, msg)
@@ -245,7 +251,7 @@ class Bot(irc.bot.SingleServerIRCBot):
         if self.password in ev.arguments[0]:
             self.new_password()
 
-    def parseChat(self, ev, priv = False):
+    def parseChat(self, ev, priv=False):
         if (ev.arguments[0][0] in self.prefixes):
             self.executeCommand(ev, priv)
 
@@ -304,8 +310,9 @@ class Bot(irc.bot.SingleServerIRCBot):
         for p in self.plugins:
             for c in p.commands:
                 if command == c.name:
-                    if c.password and (data[:5] == self.password or issuedBy in self.loggedin) or\
-                        not c.password:
+                    if c.password and (data[:5] == self.password or
+                       issuedBy in self.loggedin) or \
+                       not c.password:
                         try:
                             c.function(issuedBy, data)
                         except Exception as e:
@@ -317,6 +324,7 @@ class Bot(irc.bot.SingleServerIRCBot):
                         return
 
         self.reply("Command not found: " + command)
+
 
 def main():
     config = configloader.load_config()
