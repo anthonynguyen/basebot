@@ -74,7 +74,7 @@ class CorePlugin:
         """[command] - displays this message"""
         if data == "":
             for p in self.bot.plugins:
-                self.bot.reply("[{}] {}".format(p.name, ", ".join(self.bot.prefixes[0] + c.name for c in p.commands)))
+                self.bot.reply("[{}] {}".format(p.name, ", ".join(self.bot.prefixes[0] + c.name + ("*" if c.password else "") for c in p.commands)))
         else:
             for p in self.bot.plugins:
                 for c in p.commands:
