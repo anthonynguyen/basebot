@@ -311,10 +311,13 @@ class Bot(irc.bot.SingleServerIRCBot):
             for c in p.commands:
                 if command == c.name:
                     if c.password and (data[:5] == self.password or
-                       issuedBy in self.loggedin) or \
+                       ev.source.host in self.loggedin) or \
                        not c.password:
                         try:
-                            c.function(issuedBy, data)
+                            if c.name == "login":
+                                c.function(ev.source, data)
+                            else:
+                                c.function(issuedBy, data)
                         except Exception as e:
                             self.reply("The command failed:")
                             self.reply(e.__str__())

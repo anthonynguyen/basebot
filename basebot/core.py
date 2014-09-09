@@ -102,9 +102,12 @@ class CorePlugin:
 
     def cmd_login(self, issuedBy, data):
         """logs you in"""
-        if issuedBy not in self.bot.loggedin:
-            self.bot.loggedin.append(issuedBy)
-            self.bot.reply("{} has logged in".format(issuedBy))
+        # The login function is special in that it gets the full user object,
+        # not just the nick
+        host = issuedBy.host
+        if host not in self.bot.loggedin:
+            self.bot.loggedin.append(host)
+            self.bot.reply("{} has logged in".format(issuedBy.nick))
         else:
             self.bot.reply("You are already logged in")
 
