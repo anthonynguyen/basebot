@@ -287,7 +287,6 @@ class Bot(irc.bot.SingleServerIRCBot):
 
     def new_password(self):
         self.password = genRandomString(5)
-        self._msg_owners("My password is: " + self.password)
         print("The password is: " + self.password)
 
     """
