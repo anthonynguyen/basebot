@@ -7,6 +7,7 @@ class CorePlugin:
         self.bot.registerCommand("h", self.cmd_help)
         self.bot.registerCommand("plugins", self.cmd_plugins)
 
+        self.bot.registerCommand("password", self.cmd_password, True)
         self.bot.registerCommand("login", self.cmd_login, True)
         self.bot.registerCommand("reload", self.cmd_reload, True)
         self.bot.registerCommand("die", self.cmd_die, True)
@@ -99,6 +100,10 @@ class CorePlugin:
     #             Admin Commands               #
     #------------------------------------------#
     """
+
+    def cmd_password(self, issuedBy, data):
+        """displays the bot's password"""
+        self.bot.pm(issuedBy, "My password is: " + self.bot.password)
 
     def cmd_login(self, issuedBy, data):
         """logs you in"""
