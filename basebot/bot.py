@@ -203,14 +203,15 @@ class Bot(irc.bot.SingleServerIRCBot):
     def on_ping(self, conn, ev):
         self.connection.pong(ev.target)
 
-    @RateLimited(2)
+    @RateLimited(1.5)
     def say(self, msg):
         self.connection.privmsg(self.channel, msg)
-
+    
+    @RateLimited(1.5)
     def pm(self, nick, msg):
         self.connection.privmsg(nick, msg)
     
-    @RateLimited(2)
+    @RateLimited(1.5)
     def reply(self, msg):
         self.connection.privmsg(self.target, msg)
 
